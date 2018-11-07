@@ -1,0 +1,4 @@
+If the PCM device is not opening
+-Open to playback.c
+-Change name to "hw:0,0" instead of "hw:1,0"
+-Save changes and recompile
