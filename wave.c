@@ -273,7 +273,7 @@ char *generate_saw(unsigned long freq,unsigned long amp,char **p_buffer){
 	for(frames = 0;frames < periodsize;frames++){
 		t = (float)n / (float)rate;
 		debug("t: %f\tn: %lu",t,n);
-		float fsamples = modf((float)freq * t,NULL) - .5f;
+		float fsample = modf((float)freq * t,NULL) - .5f;
 		short sample = fsample * amp * 2;
 
 		//This part works only for S16_LE
