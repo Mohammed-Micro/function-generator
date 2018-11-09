@@ -90,6 +90,7 @@ int main(int argc,char **argv){
 
 	for(i = 1;i < argc;i++){
 		char *arg = argv[i];
+		debug("i: %d",i);
 		if(strcmp(arg,"-1") == 0){
 			check(argc - i >= 3,"Usage: main -1 <waveform> <freq> <amplitude> ...");
 			arg = argv[++i]; //Shift to the next arg
@@ -104,7 +105,7 @@ int main(int argc,char **argv){
 			ch1.amp = strtol(arg,NULL,10);
 			debug("ch1.amp: %lu",ch1.amp);
 		}
-		else if(strcmp(arg,"-2")){
+		else if(strcmp(arg,"-2") == 0){
 			check(argc - i >= 3,"Usage: main -2 <waveform> <freq> <amplitude>");
 			arg = argv[++i];
 			ch2.shape = wave_atoi(arg);
