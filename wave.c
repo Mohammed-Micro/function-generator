@@ -187,7 +187,7 @@ error:
 
 char *generate_square(unsigned long freq, unsigned long amp, char **p_buffer){
 	unsigned int rate;
-	unsigned int periodsize;
+	unsigned long periodsize;
 
 	err = alsa_get_rate(&rate);
 	debug("rate: %u", rate);
@@ -197,9 +197,6 @@ char *generate_square(unsigned long freq, unsigned long amp, char **p_buffer){
 	debug("periodsize: %lu",periodsize);
 	check_err("alsa_get_rate");
 
-	err = alsa_get_period_size(&periodsize);
-	debug("periodsize: %lu",periodsize);
-	check_err("alsa_get_period_size");
 
 	check(rate >= 2 * freq,"Sample rate must be at least two times greater than the wave frequency");
 
@@ -218,12 +215,15 @@ char *generate_square(unsigned long freq, unsigned long amp, char **p_buffer){
 	 * t equals an integer 'n' times the period of sampling
 	 */
 	float t;
+	double fraction;
 
 	for(frames = 0;frames < periodsize;frames++){
 		t = (float)n / (float) rate;
-		debug("t: %f\tn: %lu",t,n);
+		log_info("t: %f\tn: %lu",t,n);
 	
-		short sample = amp * _sgn(modf((double)freq * (double)t,NULL) - .5);
+		short sample = amp * ( _sgn(modf((double)freq * (double)t,&fraction) - .5));
+//		sample = sample * amp;
+		log_info("Sample : %d",sample);
 
 		//This part works only for S16_LE
 		buffer[2*frames + 0] = sample & 0x00ff;//This will make the MSB equal to zero
@@ -269,11 +269,12 @@ char *generate_saw(unsigned long freq,unsigned long amp,char **p_buffer){
 	 * t equals an integer 'n' times the period of sampling
 	 */
 	float t;
+	double fraction;
 
 	for(frames = 0;frames < periodsize;frames++){
 		t = (float)n / (float)rate;
 		debug("t: %f\tn: %lu",t,n);
-		float fsample = modf((float)freq * t,NULL) - .5f;
+		float fsample = modf((float)freq * t,&fraction) - 0.5f;
 		short sample = fsample * amp * 2;
 
 		//This part works only for S16_LE
