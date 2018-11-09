@@ -12,6 +12,7 @@ typedef enum _shape{
 	SINE = 0,SQUARE,SAW,TRIANG
 }Shape;
 
+//Structure holding the parameter of a waveform
 typedef struct _wave{
 	Shape shape;
 	unsigned long freq;
@@ -20,8 +21,10 @@ typedef struct _wave{
 
 static int err;
 
+//Map integers in Shape enum to strings 
 const char* wave_names[] = {"sine","square","saw","triang"};
 
+/* Generate and play a waveform for each channle */
 int output_waves(Wave *ch1_wave,Wave *ch2_wave){
 
 	/*These two pointers point to the memory allocated by generate_<wave> functions
@@ -63,18 +66,22 @@ error:
 	return -1;
 }
 
+/*Map a string holding the name of the desired waveform to an integer number
+ * ,or '-1' if the name is not a valid waveform
+ */
 int wave_atoi(const char *wave_name){
 
 	size_t i;
 	for(i = 0;i < WAVES;i++){
-		if(strcmp(wave_name,wave_names[i]) == 0){
-			return i;
+		if(strcasecmp(wave_name,wave_names[i]) == 0){
+			return i;//Return the index of the matched waveform name in wave_names array
 		}
 	}
 
-	return -1;
+	return -1;//No matches can be found
 }
 
+/*Explains itself,fools*/
 void print_wave_params(Wave *wave){
 
 	printf("Waveform: %s\n",wave_names[wave->shape]);
@@ -86,7 +93,9 @@ int main(int argc,char **argv){
 
 	int i;
 	long rc;
+	/*Used to indicate if a string contains no digits at the beginning */
 	char *strtol_ptr;
+	//Setting up a default waveform to play incase nothing is specified for a particular channel
 	Wave ch1 = {.shape = SINE,.freq = 1000,.amp = 30000};
 	Wave ch2 = ch1;
 
@@ -96,7 +105,8 @@ int main(int argc,char **argv){
 		debug("i: %d",i);
 
 		if(strcmp(arg,"-1") == 0){
-			/* There must be three or more arguments following '-1' */
+			/* There must be three or more arguments following '-1' 
+			 * Note that if no args are given argc = 1 */
 			check(argc - i > 3,"Usage: main -1 <waveform> <freq> <amplitude> ...");
 			arg = argv[++i]; //Shift to the next arg
 			/* Make sure arg is one of the valid waveform values[0-3] */
@@ -111,8 +121,7 @@ int main(int argc,char **argv){
 
 			arg = argv[++i];
 			/* arg must evaluate to a positive number
-			 * If arg doesn't contain any digits,then strtol_ptr = arg is true and the test fails 
-			 */
+			 * If arg doesn't contain any digits at the beginning,then strtol_ptr = arg is true and the test fails */
 			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
 				ch1.freq = rc;
 			}
@@ -170,9 +179,9 @@ int main(int argc,char **argv){
 	err = print_params();
 	check_err("print_params");
 
-	puts("Channel 1");
+	puts("\nChannel 1");
 	print_wave_params(&ch1);
-	puts("Channel 2");
+	puts("\nChannel 2");
 	print_wave_params(&ch2);
 
 	err = output_waves(&ch1,&ch2);
