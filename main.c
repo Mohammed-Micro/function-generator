@@ -19,10 +19,10 @@ int main(int argc,char **argv){
 	check_err("print_params");
 
 	while(1){
-		ptr = generate_sine(500,30000,&data1);
-		check(ptr,"generate_saw:1");
+		ptr = generate_square(500,30000,&data1);
+		check(ptr,"generate_square:1");
 
-		ptr = generate_sine(1000,30000,&data2);
+		ptr = generate_saw(1000,30000,&data2);
 		check(ptr,"generate_sine:2");
 
 		buffer = play(data1,data2);
