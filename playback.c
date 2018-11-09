@@ -10,7 +10,7 @@ snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 snd_pcm_hw_params_t *hwparams;
 
 int err;
-const char *name = "hw:0,0";
+const char *name = "hw:1,0";
 
 /*For debugging purposes*/
 int alsa_main(void){
