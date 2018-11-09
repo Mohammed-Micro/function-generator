@@ -13,7 +13,7 @@ typedef enum _shape{
 
 typedef struct _wave{
 	Shape shape;
-	unsigned int freq;
+	unsigned long freq;
 	unsigned long amp;
 }Wave;
 
@@ -32,44 +32,32 @@ int output_waves(Wave *ch1_wave,Wave *ch2_wave){
 	/*Checks if calls to functions generate_<wave> was successfull or not*/
 	char *rc_ptr = NULL;
 
-	switch(ch1_wave->shape){
-		case SINE:
-			rc_ptr = generate_sine(ch1_wave->freq,ch1_wave->amp,&ch1_samples);
-			break;
-		case SQUARE:
-			rc_ptr = generate_square(ch1_wave->freq,ch1_wave->amp,&ch1_samples);
-			break;
-		case SAWTOOTH:
-			rc_ptr = generate_saw(ch1_wave->freq,ch1_wave->amp,&ch1_samples);
-			break;
-		case TRIANGULAR:
-			rc_ptr = generate_triangular(ch1_wave->freq,ch1_wave->amp,&ch1_samples);
-			break;
-		default:
-			sentinel("This value(%d) doesn't represent a waveform",ch1_wave->shape);
-	}
-	check(rc_ptr,"rc_ptr in NULL");
+	//Define type pointer to function that returns char* and takes (unsgined long,unsigned long,char **)
+	typedef char *(*generate_ptr)(unsigned long,unsigned long,char **);
+	//Array of pointers to functions of type generate_ptr
+	generate_ptr generates[] = {&generate_sine,&generate_square,&generate_sawtooth,&generate_triangular};
+	//Define pointers that can be used to call the appropriate generate_<wave> function for each channel
+	generate_ptr ch1_generate_wave_ptr = generates[ch1_wave->shape];
+	generate_ptr ch2_generate_wave_ptr = generates[ch2_wave->shape];
 
-	//Do same thing for channel 2
-	switch(ch2_wave->shape){
-		case SINE:
-			rc_ptr = generate_sine(ch2_wave->freq,ch2_wave->amp,&ch2_samples);
-			break;
-		case SQUARE:
-			rc_ptr = generate_square(ch2_wave->freq,ch2_wave->amp,&ch2_samples);
-			break;
-		case SAWTOOTH:
-			rc_ptr = generate_saw(ch2_wave->freq,ch2_wave->amp,&ch2_samples);
-			break;
-		case TRIANGULAR:
-			rc_ptr = generate_triangular(ch2_wave->freq,ch2_wave->amp,&ch2_samples);
-			break;
-		default:
-			sentinel("This value(%d) doesn't represent a waveform",ch2_wave->shape);
+	while(1){
+		rc_ptr = (*ch1_generate_wave_ptr)(ch1_wave->freq,ch1_wave->amp,&ch1_samples);
+		check(rc_ptr,"rc_ptr is NULL");
+		rc_ptr = (*ch2_generate_wave_ptr)(ch2_wave->freq,ch2_wave->amp,&ch2_samples);
+		check(rc_ptr,"rc_ptr is NULL");
+
+		buffer = play(ch1_samples,ch2_samples);
+		check(buffer,"buffer is NULL");
 	}
-	check(rc_ptr,"rc_ptr is NULL");
 	return 0;
 error:
+	if(ch1_samples)
+		free(ch1_samples);
+	if(ch2_samples)
+		free(ch2_samples);
+	if(buffer){
+		free(buffer);
+
 	return -1;
 }
 
