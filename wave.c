@@ -294,6 +294,62 @@ error:
 	return NULL;
 }
 
+char *generate_triang(unsigned long freq,unsigned long amp,char **p_buffer){
+	unsigned int rate;
+	unsigned long periodsize;
+
+	err = alsa_get_rate(&rate);
+	debug("rate: %u",rate);
+	check_err("alsa_get_rate");
+
+	err = alsa_get_period_size(&periodsize);
+	debug("periodsize: %lu",periodsize);
+	check_err("alsa_get_period_size");
+
+	check(rate >= 2 * freq,"Sample rate must be at least two times greater than wave frequency");
+
+	char *buffer = *p_buffer;
+	/*If buffer is NULL,allocate some memory and let it point to that memory.*/
+	if(!buffer){
+		buffer = (char*) malloc(periodsize * sizeof(short));
+		check_mem(buffer);
+		*p_buffer = buffer;
+	}
+
+	unsigned long frames;
+	/*Declared static so that the next write to buffer starts from the point at which the previous write ended.*/
+	static unsigned long n = 0;
+	/*Writing samples takes place at specific points of time that are evenly spaced.
+	 * t equals an integer 'n' times the period of sampling
+	 */
+	float t;
+	/*Used by modf to store the integral part,but have nothing useful to do...*/
+	double intpart;
+	float fsample;
+	short sample;
+
+	for(frames = 0;frames < periodsize;frames++){
+		t = (float)n / (float)rate;
+		debug("t: %f\tn: %lu",t,n);
+
+		fsample = (modf((double)freq * (double)t * 2,&intpart) - 0.5f) * _sgn(modf((double)freq * (double)t,&intpart) - 0.5);
+		sample = fsample * amp * 2;
+
+		//This part works only for S16_LE
+		buffer[2*frames + 0] = sample & 0x00ff;//This will make the MSB equal to zero
+		buffer[2*frames + 1] = (sample & 0xff00) >> BITS_PER_BYTE;
+
+		/*Setting an upper bound to n,to prevent overflow*/
+		if(++n == rate){
+			n = 0;
+			debug("Resetting n.........");
+		}
+	}
+	return buffer;
+error:
+	return NULL;
+}
+
 char *play(const char *ch1_buffer,const char *ch2_buffer){
 
 	unsigned long periodsize;

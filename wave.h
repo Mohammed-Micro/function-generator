@@ -18,6 +18,8 @@ char *generate_saw(unsigned long,unsigned long,char **);
 
 char *generate_square(unsigned long,unsigned long,char **);
 
+char *generate_triang(unsigned long,unsigned long,char **);
+
 /* Combines The data of two buffers,representing two channels,and then
  * Write them to the ring buffer of the PCM device
  */
