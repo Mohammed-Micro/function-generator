@@ -10,7 +10,7 @@
 #define PI 3.14159
 #define BITS_PER_BYTE 8	
 
-#define _sgn(X) (X>0.0)?1:-1
+#define _sgn(X) ((X>0.0)?1:-1)
 
 static int err = 0;
 

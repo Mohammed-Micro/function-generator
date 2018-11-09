@@ -8,7 +8,7 @@
 
 
 typedef enum _shape{
-	SINE = 0,SQUARE,SAWTOOTH,TRIANGULAR
+	SINE = 0,SQUARE,SAW,TRIANG
 }Shape;
 
 typedef struct _wave{
@@ -32,14 +32,6 @@ int output_waves(Wave *ch1_wave,Wave *ch2_wave){
 	/*Checks if calls to functions generate_<wave> was successfull or not*/
 	char *rc_ptr = NULL;
 
-<<<<<<< HEAD
-	while(1){
-		ptr = generate_triang(500,30000,&data1);
-		check(ptr,"generate_triang:1");
-
-		ptr = generate_triang(1000,30000,&data2);
-		check(ptr,"generate_triang:2");
-=======
 	//Define type pointer to function that returns char* and takes (unsgined long,unsigned long,char **)
 	typedef char *(*generate_ptr)(unsigned long,unsigned long,char **);
 	//Array of pointers to functions of type generate_ptr
@@ -54,7 +46,6 @@ int output_waves(Wave *ch1_wave,Wave *ch2_wave){
 		check(rc_ptr,"generate_%s",wave_names[ch1_wave->shape]);
 		rc_ptr = (*ch2_generate_wave_ptr)(ch2_wave->freq,ch2_wave->amp,&ch2_samples);
 		check(rc_ptr,"generate_%s",wave_names[ch2_wave->shape]);
->>>>>>> main_branch
 
 		buffer = play(ch1_samples,ch2_samples);
 		check(buffer,"play");
@@ -74,7 +65,7 @@ error:
 int main(int argc,char **argv){
 
 
-	Wave ch1 = {SINE,1000,30000};
+	Wave ch1 = {TRIANG,1000,30000};
 	Wave ch2 = {SINE,1000,-30000};
 
 	err = init();
