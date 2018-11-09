@@ -19,7 +19,7 @@ int main(int argc,char **argv){
 	check_err("print_params");
 
 	while(1){
-		ptr = generate_square(500,30000,&data1);
+		ptr = generate_square(1000,30000,&data1);
 		check(ptr,"generate_square:1");
 
 		ptr = generate_saw(1000,30000,&data2);
