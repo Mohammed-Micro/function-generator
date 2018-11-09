@@ -6,6 +6,7 @@
 #include "playback.h"
 #include "wave.h"
 
+#define WAVES 4
 
 typedef enum _shape{
 	SINE = 0,SQUARE,SAW,TRIANG
@@ -65,8 +66,8 @@ error:
 int wave_atoi(const char *wave_name){
 
 	size_t i;
-	for(i = 0;i < 4;i++){
-		if(!strcmp(wave_name,wave_names[i])){
+	for(i = 0;i < WAVES;i++){
+		if(strcmp(wave_name,wave_names[i]) == 0){
 			return i;
 		}
 	}
@@ -84,39 +85,81 @@ void print_wave_params(Wave *wave){
 int main(int argc,char **argv){
 
 	int i;
-	int rc;
+	long rc;
+	char *strtol_ptr;
 	Wave ch1 = {.shape = SINE,.freq = 1000,.amp = 30000};
 	Wave ch2 = ch1;
 
+	/*This loop basically looks for '-1' and '-2' */
 	for(i = 1;i < argc;i++){
 		char *arg = argv[i];
 		debug("i: %d",i);
+
 		if(strcmp(arg,"-1") == 0){
-			check(argc - i >= 3,"Usage: main -1 <waveform> <freq> <amplitude> ...");
+			/* There must be three or more arguments following '-1' */
+			check(argc - i > 3,"Usage: main -1 <waveform> <freq> <amplitude> ...");
 			arg = argv[++i]; //Shift to the next arg
-			ch1.shape = wave_atoi(arg);
+			/* Make sure arg is one of the valid waveform values[0-3] */
+			if((rc = wave_atoi(arg)) >= 0){
+				ch1.shape = (unsigned int)rc;
+			
+			}
+			else{
+				sentinel("Usage: main -1 [sine|square|saw|triang]....");
+			}
 			debug("ch1.shape: %s:%d",wave_names[ch1.shape],ch1.shape);
 
 			arg = argv[++i];
-			ch1.freq = strtol(arg,NULL,10);
+			/* arg must evaluate to a positive number
+			 * If arg doesn't contain any digits,then strtol_ptr = arg is true and the test fails 
+			 */
+			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				ch1.freq = rc;
+			}
+			else{
+				sentinel("Frequency value is invalid");
+			}
 			debug("ch1.freq: %lu",ch1.freq);
 
 			arg = argv[++i];
-			ch1.amp = strtol(arg,NULL,10);
+			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				ch1.amp = rc;
+			}
+			else{
+				sentinel("Amplitude value is invalid");
+			}
 			debug("ch1.amp: %lu",ch1.amp);
 		}
 		else if(strcmp(arg,"-2") == 0){
-			check(argc - i >= 3,"Usage: main -2 <waveform> <freq> <amplitude>");
-			arg = argv[++i];
-			ch2.shape = wave_atoi(arg);
+			/* There must be three or more arguments following '-2' */
+			check(argc - i > 3,"Usage: main -2 <waveform> <freq> <amplitude>");
+			arg = argv[++i];//Shift to the next argument
+
+			if((rc = wave_atoi(arg)) >= 0){
+				ch2.shape = rc;
+			}
+			else{
+				sentinel("Usage: main -2 [sine|square|saw|triang]");
+			}
 			debug("ch2.shape: %s:%d",wave_names[ch2.shape],ch2.shape);
 
 			arg = argv[++i];
-			ch2.freq = strtol(arg,NULL,10);
+
+			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				ch2.freq = rc;
+			}
+			else{
+				sentinel("Frequency value is invalid");
+			}
 			debug("ch2.freq: %lu",ch2.freq);
 
 			arg = argv[++i];
-			ch2.amp = strtol(arg,NULL,10);
+			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				ch2.amp = rc;
+			}
+			else{
+				sentinel("Amplitude value is invalid");
+			}
 			debug("ch2.amp: %lu",ch2.amp);
 		}
 	}
