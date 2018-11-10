@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <alsa/asoundlib.h>
+#include <errno.h>
 #include "dbg.h"
 #include "playback.h"
 #include "wave.h"
@@ -54,6 +55,14 @@ int output_waves(Wave *ch1_wave,Wave *ch2_wave){
 		buffer = play(ch1_samples,ch2_samples);
 		check(buffer,"play");
 	}
+
+	if(ch1_samples)
+		free(ch1_samples);
+	if(ch2_samples)
+		free(ch2_samples);
+	if(buffer)
+		free(buffer);
+
 	return 0;
 error:
 	if(ch1_samples)
@@ -92,7 +101,8 @@ void print_wave_params(Wave *wave){
 int main(int argc,char **argv){
 
 	int i;
-	long rc;
+	long rc;//shorthand for retern_check
+
 	/*Used to indicate if a string contains no digits at the beginning */
 	char *strtol_ptr;
 	//Setting up a default waveform to play incase nothing is specified for a particular channel
@@ -102,10 +112,10 @@ int main(int argc,char **argv){
 	/*This loop basically looks for '-1' and '-2' */
 	for(i = 1;i < argc;i++){
 		char *arg = argv[i];
-		debug("i: %d",i);
+		debug("i: %u",i);
 
 		if(strcmp(arg,"-1") == 0){
-			/* There must be three or more arguments following '-1' 
+			/* There must be three or more arguments following '-1' option
 			 * Note that if no args are given argc = 1 */
 			check(argc - i > 3,"Usage: main -1 <waveform> <freq> <amplitude> ...");
 			arg = argv[++i]; //Shift to the next arg
@@ -120,18 +130,22 @@ int main(int argc,char **argv){
 			debug("ch1.shape: %s:%d",wave_names[ch1.shape],ch1.shape);
 
 			arg = argv[++i];
-			/* arg must evaluate to a positive number
-			 * If arg doesn't contain any digits at the beginning,then strtol_ptr = arg is true and the test fails */
+			/* arg must evaluate to a positive number			 
+			 *If arg doesn't contain any digits at the beginning,then strtol_ptr = arg is true and the test fails
+			 */			
 			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				check(!errno,"");
 				ch1.freq = rc;
 			}
 			else{
+				//End the program
 				sentinel("Frequency value is invalid");
 			}
 			debug("ch1.freq: %lu",ch1.freq);
 
 			arg = argv[++i];
 			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				check(!errno,"");
 				ch1.amp = rc;
 			}
 			else{
@@ -155,6 +169,7 @@ int main(int argc,char **argv){
 			arg = argv[++i];
 
 			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				check(!errno,"");
 				ch2.freq = rc;
 			}
 			else{
@@ -164,6 +179,7 @@ int main(int argc,char **argv){
 
 			arg = argv[++i];
 			if((rc = strtol(arg,&strtol_ptr,10)) >= 0 && (arg != strtol_ptr)){
+				check(!errno,"");
 				ch2.amp = rc;
 			}
 			else{
