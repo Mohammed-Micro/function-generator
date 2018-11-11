@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# fgenerate - generates different waveforms using the internal sound card
+# uses ALSA standard library
+
+OPTIN=0
+
+chnl="-1"
+wave1="sine"
+freq1=3000
+amp1=15000
+wave2="sine"
+freq2=3000
+amp2=15000
+args=""
+
+for opt in "$@"; do
+	case $opt in
+		-i|--interactive )
+			echo -e "Enter waveform for the first channel (case-sensitive \"sine\", \"square\", \"saw\", \"triang\"): "
+			read wave1
+			echo "Enter frequency for the first channel: "
+			read freq1
+			echo "Enter amplitude for the first channel: "
+			read amp1
+			echo -e "Enter waveform for the second channel (case-sensitive \"sine\", \"square\", \"saw\", \"triang\"): "
+			read wave2
+			echo "Enter frequency for the second channel: "
+			read freq2
+			echo "Enter amplitude for the second channel: "
+			read amp2
+			args="-1 $wave1 $freq1 $amp1 -2 $wave2 $freq2 $amp2"
+			break
+			;;
+		-h|--help )
+			cat help_page.txt
+			exit 0
+			;;
+		-v|--version)
+			cat version.txt
+			exit 0
+			;;
+		-1 | -2 )
+			args=$@
+			break
+			;;
+		* )
+			echo -e "\e[31mError: invalid format\e[0m"
+			echo "type \"fgenerate -h\" for help"
+			exit 0
+	esac
+done
+
+pasuspender -- ./main $args
