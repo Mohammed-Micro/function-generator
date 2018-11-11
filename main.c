@@ -1,3 +1,5 @@
+#define NDEBUG
+
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -106,7 +108,7 @@ int main(int argc,char **argv){
 	/*Used to indicate if a string contains no digits at the beginning */
 	char *strtol_ptr;
 	//Setting up a default waveform to play incase nothing is specified for a particular channel
-	Wave ch1 = {.shape = SINE,.freq = 1000,.amp = 30000};
+	Wave ch1 = {.shape = SINE,.freq = 1000,.amp = 0};
 	Wave ch2 = ch1;
 
 	/*This loop basically looks for '-1' and '-2' */
