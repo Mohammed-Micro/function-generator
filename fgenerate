@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# fgenerate - generates different waveforms using the internal sound card
+# uses ALSA standard library
+
+OPTIN=0
+
+chnl=1
+wave="sine"
+freq=3000
+amp=15000
+
+while getopts "i12h" opt; do
+	case $opt in
+		i )
+			echo "Enter channel (1, 2, b): "
+			read chnl
+			echo -e "Enter your desired waveform (case-sensitive \"sine\", \"square\", \"saw\", \"triang\"): "
+			read wave
+			echo "Enter your desired frequency: "
+			read freq
+			echo "Enter your desired amplitude: "
+			read amp
+			if [ $chnl = "b" ]; then
+				pasuspender -- ./main -1 $wave $freq $amp -2 $wave $freq $amp
+			elif [ $chnl = 1 ] || [ $chnl = 2 ]; then
+				pasuspender -- ./main -$chnl $wave $freq $amp
+			else
+				echo "\e[31mERROR: invalid channel"
+			fi
+			;;
+		1 | 2 )
+			pasuspender -- ./main "$@"
+	esac
+done
