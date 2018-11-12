@@ -3,9 +3,6 @@
 # fgenerate - generates different waveforms using the internal sound card
 # uses ALSA standard library
 
-OPTIN=0  #What the hell is that used for?
-
-chnl="-1"
 wave1="sine"
 freq1=1000
 amp1=0
@@ -18,102 +15,101 @@ args=""
 declare -i ch1en=0
 declare -i ch2en=0
 
+opt=$1
 
-#I can't figure out why using a loop
-for opt in "$@"; do
-	case $opt in
-		-i|--interactive )
+case $opt in
+	-i|--interactive )
 
-			PS3="What channel(s) you want to use?" #Sets prompt string. Otherwise it defaults to #?
+		PS3="What channel(s) you want to use?" #Sets prompt string. Otherwise it defaults to #?
 
-			select choice in "Channel 1" "Channel 2" "Both" "None"  #Use select loop
+		select choice in "Channel 1" "Channel 2" "Both" "None"  #Use select loop
+		do
+			case $choice in
+				"Channel 1")
+					ch1en=1
+					;;
+				"Channel 2")
+					ch2en=1
+					;;
+				"Both")
+					ch1en=1
+					ch2en=1
+					;;
+				"None")
+					echo "You,piece of crap,why running the command in the first place?"
+					continue #Ask this dickhead for input again
+					;;
+				*)
+					echo "What is it that you don't understand,loser?"
+					exit 1
+					;;
+			esac
+			break  #Quit the loop,we don't want to iterate till we go to hell
+		done
+
+		#Read parameters for the first channel
+		if test $ch1en -eq 1
+		then
+			#Select loop for selecting the wave shape
+			PS3="Select waveform for the first channel?"
+			select wave1 in "sine" "square" "saw" "triang"
 			do
-				case $choice in
-					"Channel 1")
-						ch1en=1
-						;;
-					"Channel 2")
-						ch2en=1
-						;;
-					"Both")
-						ch1en=1
-						ch2en=1
-						;;
-					"None")
-						echo "You,piece of crap,why running the command in the first place?"
-						continue #Ask this dickhead for input again
-						;;
-					*)
-						echo "What is it that you don't understand,loser?"
-						exit 1
-						;;
-				esac
-				break  #Quit the loop,we don't want to iterate till we go to hell
+				echo $wave1
+				#if the user is smart enough to enter an invalid input,wave1 is an empty string,not a null, you C geek!!
+				if test "$wave1" = ""; then #there's a bug here,fix it please
+					echo "What is it that you don't understand,loser?"
+					exit 1
+				fi
+				break
 			done
 
-			#Read parameters for the first channel
-			if test $ch1en -eq 1
-			then
-				#Select loop for selecting the wave shape
-				PS3="Select waveform for the first channel?"
-				select wave1 in "sine" "square" "saw" "triang"
-				do
-					echo $wave1
-					#if the user is smart enough to enter a invalid input,wave1 is null
-					if test $wave1 = "\0"; then #there's a bug here,fix it please
-						echo "What is it that you don't understand,loser?"
-						exit 1
-					fi
-					break
-				done
-
-				echo -n "Enter frequency for the first channel:"
-				read freq1
+			echo -n "Enter frequency for the first channel:"
+			read freq1
 				
-				echo -n "Enter amplitude for the first channel:"
-				read amp1
+			echo -n "Enter amplitude for the first channel:"
+			read amp1
 
-			fi
+		fi
 
-			if test $ch2en -eq 1
-			then
-				PS3="Enter waveform for the second channel?"
-				select wave2 in "sine" "square" "saw" "triang"
-				do
-					echo $wave2
-					if test $wave2 = "\0"; then #Same bug again
-						echo "What is it that you don't uncerstand,loser?"
-						exit 1
-					fi
-					break
-				done
+		if test $ch2en -eq 1
+		then
+			PS3="Enter waveform for the second channel?"
+			select wave2 in "sine" "square" "saw" "triang"
+			do
+				echo $wave2
+				if test "$wave2" = ""; then #Same bug again
+					echo "What is it that you don't uncerstand,loser?"
+					exit 1
+				fi
+				break
+			done
 
-				echo -n "Enter frequency for the second channel:"
-				read freq2
+			echo -n "Enter frequency for the second channel:"
+			read freq2
 
-				echo -n "Enter amplitude for the second channel:"
-				read amp2
-			fi
+			echo -n "Enter amplitude for the second channel:"
+			read amp2
+		fi
 
-			args="-1 $wave1 $freq1 $amp1 -2 $wave2 $freq2 $amp2"
-			;;
-		-h|--help )
-			cat help_page.txt
-			exit 0
-			;;
-		-v|--version)
-			cat version.txt
-			exit 0
-			;;
-		-1 | -2 )
-			args=$@
-			break
-			;;
-		* )
-			echo -e "\e[31mError: invalid format\e[0m"
-			echo "type \"fgenerate -h\" for help"
-			exit 1
-	esac
-done
+		args="-1 $wave1 $freq1 $amp1 -2 $wave2 $freq2 $amp2"
+		;;
+	-h|--help )
+		cat help_page.txt
+		exit 0
+		;;
+	-v|--version)
+		cat version.txt
+		exit 0
+		;;
+	-1 | -2 )
+		args=$@
+		break
+		;;
+	* )
+		echo -e "\e[31mError: invalid format\e[0m"
+		echo "type \"fgenerate -h\" for help"
+		exit 1
+esac
 
 pasuspender -- ./main $args
+
